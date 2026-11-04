@@ -1,0 +1,1029 @@
+# PROJECT DEVELOPMENT PROMPT
+# DPMIS LITE – Research Project Management Information System
+
+## 1. PROJECT OVERVIEW
+
+Build a fully functional, simplified web-based Research Project Management Information System inspired by the workflow and general purpose of the Department of Science and Technology's DPMIS V2 (https://dpmisv2.dost.gov.ph/).
+
+The project will be called **DPMIS Lite**.
+
+IMPORTANT: This is an independent prototype inspired by DPMIS. Do not make an exact copy of the original website. Do not use DOST logos, proprietary assets, or imply that this application is an official government system.
+
+The purpose is to demonstrate how a research funding management system works, from researcher registration and proposal submission to administrative evaluation, approval, project implementation, monitoring, and completion.
+
+The application must be a WORKING WEB APPLICATION, not a static UI prototype.
+
+Users must be able to register, log in, submit proposals, upload documents, process applications, change statuses, evaluate proposals, manage projects, and view dashboards using persistent Firebase data.
+
+Prioritize a simple, understandable, maintainable architecture over unnecessary complexity.
+
+---
+
+## 2. REQUIRED TECHNOLOGY STACK
+
+Use the following technologies:
+
+### Backend
+- PHP 8.3 or newer.
+- Laravel 12 or a compatible stable Laravel version.
+- Laravel Blade templates.
+- Laravel routing, controllers, middleware, validation, and service classes.
+- Composer for PHP dependencies.
+
+### Frontend
+- Blade for server-rendered pages.
+- Tailwind CSS for styling.
+- Alpine.js for lightweight interactive components.
+- Lucide Icons for interface icons.
+- Chart.js for dashboard visualizations.
+
+Do not use React, Next.js, Vue, or a separate Node.js backend.
+
+Node.js and Vite may only be used for frontend asset compilation if necessary. All application business logic and server-side processing must remain in PHP Laravel.
+
+### Database
+Use Firebase Cloud Firestore as the PRIMARY and ONLY application database.
+
+Use:
+- Google Cloud Firestore PHP client (`google/cloud-firestore`) or an appropriate compatible PHP Firebase integration.
+- Firebase service account credentials for secure server-side access.
+- Firebase Storage for uploaded documents.
+
+Do not use MySQL, PostgreSQL, SQLite, or another database as the primary application data store.
+
+IMPORTANT FIREBASE REQUIREMENTS:
+- Verify PHP gRPC extension availability before using the Google Cloud Firestore PHP client.
+- If the environment does not support gRPC, implement an appropriate PHP-based Firestore REST integration using secure Google service-account authentication.
+- Do not silently replace Firestore with a local SQL database.
+- Create a dedicated Firestore service/repository layer so database operations are separated from controllers.
+- Keep Firebase credentials in environment variables or Replit Secrets.
+- Never expose service account credentials to the browser or commit them to GitHub.
+
+### Hosting
+Develop the application to run in Replit.
+
+The application must:
+- Have a working Laravel startup command.
+- Use the correct public web root.
+- Support environment variables and Replit Secrets.
+- Include deployment instructions.
+- Connect to a real Firebase project after credentials are configured.
+
+---
+
+## 3. APPLICATION DESIGN AND UI/UX
+
+Create a professional government-style research management portal.
+
+Use the original DPMIS website as general design inspiration, but improve the layout, visual hierarchy, usability, and responsiveness.
+
+### Design direction
+
+Color palette:
+- Primary navy blue: #153B65
+- Secondary blue: #2563A6
+- Light blue: #EAF2FA
+- Background: #F5F7FA
+- White: #FFFFFF
+- Text: #253247
+- Success: #198754
+- Warning: #D99A23
+- Danger: #DC3545
+
+### General visual style
+- Professional government and institutional appearance.
+- Clean white backgrounds.
+- Navy blue navigation and primary actions.
+- Subtle shadows and rounded corners.
+- Consistent spacing and typography.
+- Modern dashboard cards.
+- Clear status badges.
+- Readable data tables.
+- Responsive layouts for desktop, tablets, and mobile devices.
+- Use Lucide icons consistently.
+- Add breadcrumbs and page titles.
+- Use confirmation dialogs for important actions.
+- Show success and error notifications after operations.
+
+Avoid:
+- Excessive gradients.
+- Excessive animations.
+- Oversized dashboard cards.
+- Unnecessary decorative elements.
+- Cluttered navigation.
+- Generic AI-generated dashboard layouts.
+
+### Main layout
+
+Create a consistent application shell with:
+
+1. Left sidebar navigation.
+2. Top navigation bar.
+3. User profile dropdown.
+4. Main content area.
+5. Breadcrumb navigation.
+6. Notification area.
+
+The sidebar should be collapsible.
+
+For the public portal, use a separate clean navigation layout without the authenticated sidebar.
+
+---
+
+## 4. USER ROLES AND PERMISSIONS
+
+Implement four user roles.
+
+### ROLE 1: RESEARCHER / PROPONENT
+
+Researchers are external users who submit proposals for research funding.
+
+Permissions:
+- Register an account.
+- Log in and log out.
+- Manage their personal profile.
+- View available funding opportunities.
+- Create research proposals.
+- Save proposals as drafts.
+- Edit their own drafts.
+- Upload proposal documents.
+- Submit proposals.
+- View their submitted proposals.
+- Track proposal status.
+- View evaluation feedback and administrative remarks when released.
+- View their approved projects.
+- Submit project progress reports.
+- View project history.
+
+Researchers must never be allowed to approve their own proposals or access another researcher's private submissions.
+
+### ROLE 2: ADMINISTRATOR
+
+Administrators manage the overall application.
+
+Permissions:
+- View all users.
+- View all researchers.
+- Manage user accounts.
+- Activate or deactivate accounts.
+- View all submitted proposals.
+- Perform administrative completeness checks.
+- Return incomplete submissions for correction.
+- Assign proposals to evaluators.
+- View evaluation results.
+- Record final approval or disapproval decisions.
+- Manage funding opportunities.
+- Manage projects.
+- View all reports.
+- View system statistics.
+- View audit logs.
+
+### ROLE 3: EVALUATOR
+
+Evaluators review assigned research proposals.
+
+Permissions:
+- View proposals assigned to them.
+- View proposal information.
+- View uploaded documents.
+- Evaluate assigned proposals.
+- Provide scores.
+- Write evaluation remarks.
+- Submit recommendations.
+- View their evaluation history.
+
+Evaluators must not be able to manage user accounts or approve funding independently.
+
+### ROLE 4: PROJECT OFFICER / MONITORING PERSONNEL
+
+Project officers monitor approved projects.
+
+Permissions:
+- View approved and ongoing projects.
+- View project information.
+- Update monitoring status.
+- Review progress reports.
+- Record monitoring remarks.
+- Track project timelines.
+- View project accomplishments.
+- Mark projects as completed, subject to authorized approval.
+
+---
+
+## 5. PUBLIC WEBSITE MODULE
+
+Create a public-facing landing page.
+
+Include:
+
+### Homepage
+- Professional application branding.
+- Short explanation of the system.
+- Hero section.
+- Overview of research funding opportunities.
+- Steps explaining how to submit a proposal.
+- Login button.
+- Register button.
+- Proposal tracking button.
+- Footer with contact information.
+
+### About
+Explain the purpose of the research project management system.
+
+### Funding Opportunities
+Display active funding programs.
+
+Each funding opportunity should contain:
+- Program title.
+- Description.
+- Funding agency or council.
+- Application deadline.
+- Eligibility requirements.
+- Status.
+- View details button.
+
+### Proposal Tracking
+Allow researchers to enter their tracking number.
+
+Display:
+- Tracking number.
+- Proposal title.
+- Submission date.
+- Current status.
+- Status history.
+- Latest administrative remarks, if released.
+
+Do not expose private researcher information or confidential evaluation details through public tracking.
+
+---
+
+## 6. RESEARCHER MODULE
+
+Create a complete researcher dashboard.
+
+### Researcher Dashboard
+
+Display:
+- Total proposals.
+- Draft proposals.
+- Submitted proposals.
+- Proposals under evaluation.
+- Approved proposals.
+- Disapproved proposals.
+- Ongoing projects.
+
+Include a recent activity section and proposal status chart.
+
+### Researcher Profile
+
+Fields:
+- Full name.
+- Email.
+- Contact number.
+- Institution / Organization.
+- Department.
+- Position.
+- Educational background.
+- Research specialization.
+- Address.
+
+### Proposal Management
+
+Create a multi-section proposal form.
+
+Section 1: Project Information
+- Project title.
+- Funding opportunity.
+- Research classification.
+- Research sector.
+- Implementing institution.
+- Project location.
+- Project duration.
+- Proposed start date.
+- Proposed end date.
+
+Section 2: Project Description
+- Project background.
+- Rationale.
+- General objective.
+- Specific objectives.
+- Research methodology.
+- Expected outcomes.
+- Expected benefits.
+
+Section 3: Project Personnel
+- Project leader.
+- Researchers.
+- Collaborators.
+- Institution.
+- Role and responsibilities.
+
+Section 4: Work Plan
+- Activity description.
+- Start date.
+- End date.
+- Expected deliverable.
+- Responsible personnel.
+
+Allow users to add multiple activities dynamically.
+
+Section 5: Budget
+- Personnel services.
+- Maintenance and operating expenses.
+- Equipment expenses.
+- Other applicable expenses.
+- Total proposed budget.
+
+Automatically calculate the total budget.
+
+Section 6: Supporting Documents
+Allow file uploads for:
+- Complete research proposal.
+- Curriculum vitae.
+- Work plan.
+- Budget breakdown.
+- Institutional endorsement.
+- Other supporting documents.
+
+Allow PDF, DOC, DOCX, and permitted image formats.
+
+Store uploaded documents in Firebase Storage. Store their metadata and secure file references in Firestore.
+
+### Proposal Actions
+
+Provide:
+- Save as Draft.
+- Edit Draft.
+- Preview Proposal.
+- Submit Proposal.
+
+Before submission, show a confirmation dialog.
+
+After submission:
+- Generate a unique tracking number.
+- Record submission date.
+- Change proposal status.
+- Create a status history record.
+- Prevent unauthorized editing of the submitted proposal.
+- Notify the researcher of successful submission.
+
+Use a tracking number format such as:
+
+DPMISL-2026-00001
+
+The number must be generated uniquely by the backend, not supplied by the user.
+
+---
+
+## 7. ADMINISTRATOR MODULE
+
+Create a dedicated administrator dashboard.
+
+### Administrator Dashboard
+
+Display summary cards:
+- Total researchers.
+- Total proposals.
+- Pending administrative review.
+- Under evaluation.
+- For approval.
+- Approved proposals.
+- Disapproved proposals.
+- Ongoing projects.
+- Completed projects.
+
+Include:
+- Proposal statistics chart.
+- Proposal distribution by status.
+- Recent submissions.
+- Recent administrative activities.
+
+### Proposal Management
+
+Create a proposal management table with:
+- Tracking number.
+- Project title.
+- Researcher.
+- Institution.
+- Funding program.
+- Submission date.
+- Current status.
+- Actions.
+
+Add:
+- Search.
+- Filters.
+- Sorting.
+- Pagination.
+- View details.
+- View attachments.
+
+### Administrative Review
+
+Allow the administrator to:
+- Inspect submitted proposal information.
+- Verify required fields.
+- Check supporting documents.
+- Record administrative remarks.
+- Mark a proposal as complete.
+- Return incomplete proposals for correction.
+
+### Evaluator Assignment
+
+Allow administrators to:
+- View available evaluators.
+- Assign an evaluator to a proposal.
+- Record the assignment date.
+- View assignment status.
+
+### Final Decision
+
+After evaluation, allow authorized administrators to:
+- Approve a proposal.
+- Disapprove a proposal.
+- Return it for revision.
+
+Require remarks when recording a decision.
+
+When a proposal is approved:
+- Create a corresponding project record.
+- Copy the necessary proposal information into the project record.
+- Set its project status to Approved.
+- Make it visible in the project management module.
+
+---
+
+## 8. EVALUATOR MODULE
+
+Create an evaluator dashboard.
+
+Display:
+- Total assigned proposals.
+- Pending evaluations.
+- Completed evaluations.
+- Recent evaluation activities.
+
+### Evaluation Interface
+
+Display the proposal information and documents.
+
+Create an evaluation form containing:
+
+1. Research relevance.
+2. Technical merit.
+3. Methodology.
+4. Feasibility.
+5. Expected impact.
+6. Budget justification.
+
+Use a rating scale of 1–5 for each criterion.
+
+Calculate the overall score automatically.
+
+Provide:
+- General remarks.
+- Strengths.
+- Weaknesses.
+- Recommendations.
+
+Recommendation options:
+- Recommended for Approval.
+- Recommended for Revision.
+- Not Recommended.
+
+Allow the evaluator to save a draft evaluation and submit the final evaluation.
+
+Once submitted, lock the evaluation against unauthorized changes.
+
+The evaluator's recommendation must not automatically approve the proposal. The administrator must record the final decision.
+
+---
+
+## 9. PROJECT MONITORING MODULE
+
+This module handles approved research proposals.
+
+### Project Dashboard
+
+Display:
+- Total approved projects.
+- Ongoing projects.
+- Projects nearing completion.
+- Completed projects.
+- Delayed projects.
+
+### Project Details
+
+Each project should display:
+- Project title.
+- Tracking number.
+- Project leader.
+- Implementing institution.
+- Funding program.
+- Approved budget.
+- Start date.
+- End date.
+- Project status.
+- Project work plan.
+- Project personnel.
+
+### Progress Reporting
+
+Allow project officers or authorized researchers to submit progress reports.
+
+Report fields:
+- Reporting period.
+- Activities completed.
+- Percentage of accomplishment.
+- Issues encountered.
+- Recommendations.
+- Supporting documents.
+- Date submitted.
+
+Allow administrators or monitoring personnel to review reports and provide remarks.
+
+### Project Statuses
+
+Use the following:
+- Approved.
+- Ongoing.
+- Delayed.
+- For Monitoring.
+- Completed.
+- Terminated.
+
+Provide a visual project timeline.
+
+For the prototype, do not implement complicated real-world financial release or liquidation processing. Only demonstrate basic approved budget information and progress reporting.
+
+---
+
+## 10. PROPOSAL WORKFLOW AND STATUS MANAGEMENT
+
+Implement the following simplified workflow:
+
+Draft
+↓
+Submitted
+↓
+Administrative Review
+↓
+For Correction (if incomplete)
+↓
+Under Evaluation
+↓
+For Approval
+↓
+Approved / Disapproved
+
+If approved:
+↓
+Project Created
+↓
+Ongoing
+↓
+For Monitoring
+↓
+Completed
+
+Important business rules:
+
+- Researchers can only edit drafts and proposals explicitly returned for correction.
+- Only administrators can perform administrative review and final decisions.
+- Evaluators can only evaluate proposals assigned to them.
+- A proposal cannot be approved without a completed evaluation.
+- A submitted proposal cannot be silently edited.
+- Every status change must be saved in the status history.
+- Every important action must record the responsible user and timestamp.
+- An approved proposal must create a corresponding project record.
+- Disapproved proposals must remain accessible for historical records.
+- A project cannot be completed without an appropriate final monitoring decision.
+
+---
+
+## 11. FIREBASE FIRESTORE DATABASE STRUCTURE
+
+Use Cloud Firestore collections.
+
+Create the following collections:
+
+### users
+- id
+- full_name
+- email
+- password_hash or authentication_reference
+- role
+- account_status
+- created_at
+- updated_at
+
+### researcher_profiles
+- user_id
+- contact_number
+- institution
+- department
+- position
+- educational_background
+- specialization
+- address
+
+### funding_opportunities
+- id
+- title
+- description
+- funding_agency
+- eligibility
+- deadline
+- funding_status
+- created_at
+
+### proposals
+- id
+- tracking_number
+- researcher_id
+- funding_opportunity_id
+- project_title
+- project_information
+- project_description
+- personnel
+- work_plan
+- budget
+- status
+- submitted_at
+- created_at
+- updated_at
+
+### proposal_documents
+- id
+- proposal_id
+- document_name
+- document_type
+- storage_path
+- uploaded_at
+
+### evaluator_assignments
+- id
+- proposal_id
+- evaluator_id
+- assigned_by
+- assigned_at
+- assignment_status
+
+### evaluations
+- id
+- proposal_id
+- evaluator_id
+- scores
+- overall_score
+- strengths
+- weaknesses
+- remarks
+- recommendation
+- submitted_at
+
+### status_history
+- id
+- proposal_id
+- previous_status
+- new_status
+- remarks
+- changed_by
+- changed_at
+
+### projects
+- id
+- proposal_id
+- tracking_number
+- project_title
+- project_leader
+- institution
+- approved_budget
+- start_date
+- end_date
+- project_status
+- created_at
+
+### progress_reports
+- id
+- project_id
+- submitted_by
+- reporting_period
+- accomplishments
+- percentage_completed
+- issues_encountered
+- recommendations
+- report_status
+- submitted_at
+
+### notifications
+- id
+- user_id
+- title
+- message
+- related_record_id
+- is_read
+- created_at
+
+### audit_logs
+- id
+- user_id
+- action
+- module
+- record_id
+- description
+- timestamp
+
+Use Firestore document IDs and references appropriately. Avoid storing duplicated large file contents in documents.
+
+For relationships involving multiple collections, use consistent IDs and carefully designed queries.
+
+---
+
+## 12. NOTIFICATIONS
+
+Implement an in-app notification system.
+
+Notify users when:
+- An account is registered.
+- A proposal is successfully submitted.
+- A proposal is returned for correction.
+- A proposal is assigned to an evaluator.
+- An evaluation is submitted.
+- A proposal is approved or disapproved.
+- A project report is submitted.
+- A monitoring report is reviewed.
+
+Display notifications through a bell icon in the top navigation.
+
+Email notifications are optional for the prototype. If implemented, use configurable SMTP settings and do not make the application depend on email availability.
+
+---
+
+## 13. SECURITY AND VALIDATION
+
+Implement:
+- Laravel CSRF protection.
+- Server-side input validation.
+- Password hashing.
+- Role-based middleware.
+- Authorization checks on every protected action.
+- Secure session handling.
+- File type and size validation.
+- Unique tracking numbers.
+- Protected document access.
+- Audit logs.
+- Environment-based Firebase credentials.
+
+Never trust role values or user IDs submitted from the browser.
+
+Because Laravel accesses Firestore using privileged service credentials, do not rely solely on Firestore Security Rules. Enforce access permissions in Laravel controllers, services, and policies.
+
+---
+
+## 14. SAMPLE DATA AND DEMO ACCOUNTS
+
+The application must be immediately demonstrable.
+
+Create a database seeder or setup command that populates Firestore with realistic sample records.
+
+Create the following demo accounts:
+
+Administrator:
+admin@dpmislite.test
+Password: Admin123!
+
+Researcher:
+researcher@dpmislite.test
+Password: Research123!
+
+Evaluator:
+evaluator@dpmislite.test
+Password: Evaluator123!
+
+Project Officer:
+officer@dpmislite.test
+Password: Officer123!
+
+These are development-only credentials. Require secure configuration before public production deployment.
+
+Create at least:
+- 5 researcher accounts.
+- 5 sample funding opportunities.
+- 10 sample proposals with different statuses.
+- 3 evaluator accounts.
+- 3 sample approved projects.
+- 3 sample progress reports.
+
+Make the dashboards display real Firestore data from these records.
+
+---
+
+## 15. RECOMMENDED LARAVEL PROJECT STRUCTURE
+
+Use a clean MVC structure.
+
+app/
+  Http/
+    Controllers/
+      AuthController.php
+      DashboardController.php
+      ResearcherController.php
+      ProposalController.php
+      AdminController.php
+      EvaluatorController.php
+      ProjectController.php
+      MonitoringController.php
+      TrackingController.php
+  Models/
+  Services/
+    FirestoreService.php
+    ProposalService.php
+    EvaluationService.php
+    ProjectService.php
+    NotificationService.php
+    StorageService.php
+  Middleware/
+  Policies/
+
+resources/
+  views/
+    layouts/
+    components/
+    public/
+    auth/
+    researcher/
+    admin/
+    evaluator/
+    projects/
+    monitoring/
+
+routes/
+  web.php
+
+config/
+  firebase.php
+
+Keep controllers lightweight. Put Firestore operations and business logic into dedicated services.
+
+---
+
+## 16. DEVELOPMENT PRIORITIES
+
+Develop the system in the following order.
+
+PHASE 1: PROJECT FOUNDATION
+- Set up Laravel.
+- Configure Tailwind CSS and Alpine.js.
+- Configure Firebase Firestore.
+- Configure Firebase Storage.
+- Create the base layout and public homepage.
+- Configure authentication and user roles.
+
+PHASE 2: RESEARCHER FUNCTIONALITY
+- Researcher registration and login.
+- Researcher profile.
+- Funding opportunity listing.
+- Proposal creation.
+- Draft saving.
+- Document uploads.
+- Proposal submission.
+- Tracking number generation.
+
+PHASE 3: ADMINISTRATOR FUNCTIONALITY
+- Administrator dashboard.
+- Proposal management.
+- Administrative review.
+- Evaluator assignment.
+- Final decisions.
+- Funding opportunity management.
+
+PHASE 4: EVALUATOR FUNCTIONALITY
+- Evaluator dashboard.
+- Assigned proposal listing.
+- Evaluation form.
+- Scoring.
+- Recommendations.
+- Evaluation submission.
+
+PHASE 5: PROJECT MONITORING
+- Approved proposal conversion.
+- Project management.
+- Progress reports.
+- Monitoring remarks.
+- Completion workflow.
+
+PHASE 6: FINALIZATION
+- Notifications.
+- Audit logs.
+- Dashboard charts.
+- Search and filtering.
+- Security testing.
+- Responsive design.
+- Firebase deployment verification.
+
+---
+
+## 17. IMPORTANT FUNCTIONAL REQUIREMENTS
+
+Do not create buttons that do nothing.
+
+Every visible action must perform its intended function.
+
+Examples:
+- Submit must save data to Firestore.
+- Approve must update the proposal status and create a project.
+- Assign Evaluator must save an assignment.
+- Upload Document must save the file to Firebase Storage and its metadata to Firestore.
+- Track Proposal must retrieve the correct proposal.
+- Submit Evaluation must save scores and remarks.
+- Submit Progress Report must save a report.
+- Dashboard statistics must be calculated from Firestore records.
+
+Use loading states and appropriate error messages.
+
+Avoid fake charts and hardcoded dashboard numbers.
+
+Create reusable components for:
+- Status badges.
+- Dashboard cards.
+- Data tables.
+- Modal dialogs.
+- Form inputs.
+- Notifications.
+- Sidebar navigation.
+- Breadcrumbs.
+
+---
+
+## 18. ACCEPTANCE TESTING
+
+Before considering the application complete, test the following end-to-end scenario:
+
+1. Log in as a researcher.
+2. Complete the researcher profile.
+3. Select an available funding opportunity.
+4. Create a proposal.
+5. Save the proposal as a draft.
+6. Upload supporting documents.
+7. Submit the proposal.
+8. Confirm that a unique tracking number is generated.
+9. Log out.
+10. Log in as an administrator.
+11. Find the submitted proposal.
+12. Perform an administrative completeness review.
+13. Assign the proposal to an evaluator.
+14. Log out.
+15. Log in as the evaluator.
+16. Review the proposal and submit an evaluation.
+17. Log out.
+18. Log in as the administrator.
+19. Review the evaluation and approve the proposal.
+20. Verify that a project record is created.
+21. Log in as a project officer.
+22. Open the approved project.
+23. Submit or review a progress report.
+24. Verify the updated project status and history.
+25. Log back in as the researcher and verify that the researcher can see the proposal's latest status.
+
+Also test:
+- Invalid login.
+- Unauthorized access attempts.
+- Missing required fields.
+- Invalid file uploads.
+- Duplicate submissions.
+- Unauthorized status changes.
+- Missing Firebase credentials.
+- Firebase connection failures.
+
+---
+
+## 19. FINAL INSTRUCTIONS TO REPLIT AGENT
+
+Work as a senior PHP Laravel full-stack developer and system analyst.
+
+Build a functional prototype, not just a frontend demonstration.
+
+Prioritize a complete and reliable end-to-end workflow over implementing too many complicated features.
+
+Follow these rules:
+
+1. Use PHP Laravel for all backend business logic.
+2. Use Blade, Tailwind CSS, and Alpine.js for the frontend.
+3. Use Firebase Cloud Firestore as the only application database.
+4. Use Firebase Storage for documents.
+5. Never substitute mock data for actual database operations in functional workflows.
+6. Do not create dead buttons or nonfunctional forms.
+7. Use proper role-based authorization.
+8. Make the application responsive and professional.
+9. Keep the code modular and easy to maintain.
+10. Do not implement unnecessary enterprise-level complexity.
+11. Do not claim that an operation succeeded unless it was actually persisted.
+12. Verify the entire workflow using the demo accounts.
+
+Before coding, inspect the available PHP, Composer, Laravel, and gRPC environment and establish a working Firestore connection strategy.
+
+If Firebase credentials are not yet available, create the integration layer and an informative setup page, but do not pretend that database persistence is working. Make it clear which environment variables are required.
+
+Start by establishing the Laravel project, database connection, authentication, and shared UI layout. Then implement the modules in the specified phases.
+
+The final result must be a professional, working DPMIS-inspired research project management prototype that can be demonstrated from researcher registration all the way to project completion.

@@ -1,0 +1,273 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user account across roles: admin, researcher, evaluator, project_officer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "full_name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["admin", "researcher", "evaluator", "project_officer"] },
+        "account_status": { "type": "string", "enum": ["active", "inactive"] },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["id", "full_name", "email", "role", "account_status"]
+    },
+    "ResearcherProfile": {
+      "title": "ResearcherProfile",
+      "description": "Detailed institutional and academic background of a researcher",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "contact_number": { "type": "string", "maxLength": 50 },
+        "institution": { "type": "string", "maxLength": 200 },
+        "department": { "type": "string", "maxLength": 150 },
+        "position": { "type": "string", "maxLength": 100 },
+        "educational_background": { "type": "string", "maxLength": 500 },
+        "specialization": { "type": "string", "maxLength": 300 },
+        "address": { "type": "string", "maxLength": 300 }
+      },
+      "required": ["user_id", "institution"]
+    },
+    "FundingOpportunity": {
+      "title": "FundingOpportunity",
+      "description": "Active research grants and funding programs available for proposal submission",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 300 },
+        "description": { "type": "string", "maxLength": 3000 },
+        "funding_agency": { "type": "string", "maxLength": 200 },
+        "eligibility": { "type": "string", "maxLength": 1000 },
+        "deadline": { "type": "string" },
+        "funding_status": { "type": "string", "enum": ["active", "closed", "upcoming"] },
+        "budget_cap": { "type": "number" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["id", "title", "funding_agency", "funding_status"]
+    },
+    "Proposal": {
+      "title": "Proposal",
+      "description": "Research proposal submitted by a proponent with full narrative, personnel, work plan, budget, and tracking number",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tracking_number": { "type": "string", "maxLength": 50 },
+        "researcher_id": { "type": "string" },
+        "researcher_name": { "type": "string", "maxLength": 150 },
+        "funding_opportunity_id": { "type": "string" },
+        "funding_opportunity_title": { "type": "string", "maxLength": 300 },
+        "project_title": { "type": "string", "maxLength": 300 },
+        "project_information": { "type": "object" },
+        "project_description": { "type": "object" },
+        "personnel": { "type": "array" },
+        "work_plan": { "type": "array" },
+        "budget": { "type": "object" },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Submitted", "Administrative Review", "For Correction", "Under Evaluation", "For Approval", "Approved", "Disapproved"]
+        },
+        "submitted_at": { "type": "string" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["id", "researcher_id", "project_title", "status"]
+    },
+    "ProposalDocument": {
+      "title": "ProposalDocument",
+      "description": "Uploaded supporting documents for a proposal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "proposal_id": { "type": "string" },
+        "document_name": { "type": "string", "maxLength": 255 },
+        "document_type": { "type": "string", "maxLength": 100 },
+        "storage_path": { "type": "string", "maxLength": 500 },
+        "file_size": { "type": "number" },
+        "uploaded_at": { "type": "string" }
+      },
+      "required": ["id", "proposal_id", "document_name", "document_type"]
+    },
+    "EvaluatorAssignment": {
+      "title": "EvaluatorAssignment",
+      "description": "Link between a proposal and an assigned peer evaluator",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "proposal_id": { "type": "string" },
+        "evaluator_id": { "type": "string" },
+        "evaluator_name": { "type": "string", "maxLength": 150 },
+        "assigned_by": { "type": "string" },
+        "assigned_at": { "type": "string" },
+        "assignment_status": { "type": "string", "enum": ["pending", "in_progress", "completed"] }
+      },
+      "required": ["id", "proposal_id", "evaluator_id", "assignment_status"]
+    },
+    "Evaluation": {
+      "title": "Evaluation",
+      "description": "Peer review scoring and recommendation for a proposal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "proposal_id": { "type": "string" },
+        "evaluator_id": { "type": "string" },
+        "evaluator_name": { "type": "string", "maxLength": 150 },
+        "scores": { "type": "object" },
+        "overall_score": { "type": "number" },
+        "strengths": { "type": "string", "maxLength": 2000 },
+        "weaknesses": { "type": "string", "maxLength": 2000 },
+        "remarks": { "type": "string", "maxLength": 3000 },
+        "recommendation": {
+          "type": "string",
+          "enum": ["Recommended for Approval", "Recommended for Revision", "Not Recommended"]
+        },
+        "status": { "type": "string", "enum": ["Draft", "Submitted"] },
+        "submitted_at": { "type": "string" }
+      },
+      "required": ["id", "proposal_id", "evaluator_id", "recommendation"]
+    },
+    "StatusHistory": {
+      "title": "StatusHistory",
+      "description": "Audit trail of state transitions for a proposal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "proposal_id": { "type": "string" },
+        "previous_status": { "type": "string", "maxLength": 50 },
+        "new_status": { "type": "string", "maxLength": 50 },
+        "remarks": { "type": "string", "maxLength": 1000 },
+        "changed_by": { "type": "string" },
+        "changed_by_name": { "type": "string", "maxLength": 150 },
+        "changed_at": { "type": "string" }
+      },
+      "required": ["id", "proposal_id", "new_status", "changed_at"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Active funded research project resulting from an approved proposal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "proposal_id": { "type": "string" },
+        "tracking_number": { "type": "string", "maxLength": 50 },
+        "project_title": { "type": "string", "maxLength": 300 },
+        "project_leader": { "type": "string", "maxLength": 150 },
+        "researcher_id": { "type": "string" },
+        "institution": { "type": "string", "maxLength": 200 },
+        "approved_budget": { "type": "number" },
+        "start_date": { "type": "string" },
+        "end_date": { "type": "string" },
+        "project_status": {
+          "type": "string",
+          "enum": ["Approved", "Ongoing", "Delayed", "For Monitoring", "Completed", "Terminated"]
+        },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["id", "proposal_id", "project_title", "project_status"]
+    },
+    "ProgressReport": {
+      "title": "ProgressReport",
+      "description": "Periodic accomplishment and milestone monitoring report for an approved project",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "project_id": { "type": "string" },
+        "submitted_by": { "type": "string" },
+        "submitted_by_name": { "type": "string", "maxLength": 150 },
+        "reporting_period": { "type": "string", "maxLength": 100 },
+        "accomplishments": { "type": "string", "maxLength": 3000 },
+        "percentage_completed": { "type": "number" },
+        "issues_encountered": { "type": "string", "maxLength": 2000 },
+        "recommendations": { "type": "string", "maxLength": 2000 },
+        "report_status": { "type": "string", "enum": ["submitted", "reviewed", "accepted", "for_revision"] },
+        "officer_remarks": { "type": "string", "maxLength": 1000 },
+        "submitted_at": { "type": "string" }
+      },
+      "required": ["id", "project_id", "reporting_period", "percentage_completed"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app notifications for users regarding proposal events, evaluations, reviews, and monitoring",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 150 },
+        "message": { "type": "string", "maxLength": 500 },
+        "related_record_id": { "type": "string", "maxLength": 100 },
+        "is_read": { "type": "boolean" },
+        "created_at": { "type": "string" }
+      },
+      "required": ["id", "user_id", "title", "message", "is_read"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "System event and security audit record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "user_name": { "type": "string", "maxLength": 150 },
+        "action": { "type": "string", "maxLength": 100 },
+        "module": { "type": "string", "maxLength": 100 },
+        "record_id": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "action", "module", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "System user accounts"
+    },
+    "/researcher_profiles/{userId}": {
+      "schema": "ResearcherProfile",
+      "description": "Researcher profile details"
+    },
+    "/funding_opportunities/{opportunityId}": {
+      "schema": "FundingOpportunity",
+      "description": "Active and past funding programs"
+    },
+    "/proposals/{proposalId}": {
+      "schema": "Proposal",
+      "description": "Research proposals"
+    },
+    "/proposal_documents/{documentId}": {
+      "schema": "ProposalDocument",
+      "description": "Uploaded proposal documents"
+    },
+    "/evaluator_assignments/{assignmentId}": {
+      "schema": "EvaluatorAssignment",
+      "description": "Assignments of evaluators to proposals"
+    },
+    "/evaluations/{evaluationId}": {
+      "schema": "Evaluation",
+      "description": "Evaluator reviews and scores"
+    },
+    "/status_history/{historyId}": {
+      "schema": "StatusHistory",
+      "description": "Proposal status audit trail"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Approved and ongoing research projects"
+    },
+    "/progress_reports/{reportId}": {
+      "schema": "ProgressReport",
+      "description": "Project milestone and progress reports"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User in-app notifications"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "Administrative audit trail logs"
+    }
+  }
+}

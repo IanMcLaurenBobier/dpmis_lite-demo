@@ -1,0 +1,147 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'patchypatchpatchy@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isProjectOfficer() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'project_officer')
+      );
+    }
+
+    function isEvaluator() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'evaluator')
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Researcher profiles
+    match /researcher_profiles/{userId} {
+      allow read: if isSignedIn();
+      allow create, update: if isUser(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Funding opportunities
+    match /funding_opportunities/{opportunityId} {
+      allow read: if true; // Publicly viewable
+      allow write: if isAdmin();
+    }
+
+    // Proposals
+    match /proposals/{proposalId} {
+      // Public tracking can read by document ID; authenticated users read their own or admins/evaluators/officers
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.researcher_id == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (resource.data.researcher_id == request.auth.uid &&
+         (resource.data.status == 'Draft' || resource.data.status == 'For Correction'))
+      );
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.researcher_id == request.auth.uid && resource.data.status == 'Draft');
+    }
+
+    // Proposal documents
+    match /proposal_documents/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Evaluator assignments
+    match /evaluator_assignments/{assignmentId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Evaluations
+    match /evaluations/{evalId} {
+      allow read: if isSignedIn();
+      allow create: if isEvaluator() && request.resource.data.evaluator_id == request.auth.uid;
+      allow update: if isEvaluator() && (
+        isAdmin() ||
+        (resource.data.evaluator_id == request.auth.uid && resource.data.status != 'Submitted')
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Status history
+    match /status_history/{historyId} {
+      allow read: if true; // Safe timeline history
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    // Projects
+    match /projects/{projectId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || isProjectOfficer();
+      allow delete: if isAdmin();
+    }
+
+    // Progress reports
+    match /progress_reports/{reportId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || isProjectOfficer();
+      allow delete: if isAdmin();
+    }
+
+    // Notifications
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && (resource.data.user_id == request.auth.uid || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
+    }
+
+    // Audit logs
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if false; // Immutable audit trail
+    }
+  }
+}
