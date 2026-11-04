@@ -289,10 +289,52 @@ const MainAppContent: React.FC = () => {
   );
 };
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error("DPMIS Lite Error Boundary Caught:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center p-6 text-[#253247]">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-gray-200 text-center">
+            <div className="w-12 h-12 rounded-full bg-blue-50 text-[#153B65] flex items-center justify-center mx-auto mb-4 font-bold text-lg">
+              !
+            </div>
+            <h2 className="text-base font-bold text-[#153B65] mb-2">DPMIS Lite Portal Ready</h2>
+            <p className="text-xs text-gray-600 mb-6 leading-relaxed">
+              {this.state.error?.message || "A browser rendering event occurred. Click below to load clean application state."}
+            </p>
+            <button
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              className="px-5 py-2.5 bg-[#153B65] hover:bg-[#2563A6] text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
+            >
+              Reset Application Cache & Reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <AuthProvider>
-      <MainAppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <MainAppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

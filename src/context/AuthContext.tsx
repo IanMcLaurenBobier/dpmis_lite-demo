@@ -20,39 +20,53 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Synchronously initialize user from stored session or default demo researcher
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    try {
+      const storedUserId = localStorage.getItem('dpmis_session_user_id');
+      if (storedUserId) {
+        const storedUsers = localStorage.getItem('dpmis_store_users');
+        if (storedUsers) {
+          const list: UserAccount[] = JSON.parse(storedUsers);
+          const found = list.find(u => u.id === storedUserId || u.email.toLowerCase() === storedUserId.toLowerCase());
+          if (found) return found;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_USERS.find(u => u.role === 'researcher') || INITIAL_USERS[0];
+  });
 
-  // Initialize
+  const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Background non-blocking sync
   useEffect(() => {
     let mounted = true;
 
     async function init() {
-      // Test Firebase connection
-      const connected = await testConnection();
-      if (mounted) setIsFirebaseConnected(connected);
+      try {
+        // Non-blocking connection test
+        testConnection().then(connected => {
+          if (mounted) setIsFirebaseConnected(connected);
+        }).catch(() => {});
 
-      // Seed initial data if needed
-      await seedDatabase();
+        // Background seed check
+        await seedDatabase();
 
-      // Check stored session
-      const storedUserId = localStorage.getItem('dpmis_session_user_id');
-      if (storedUserId) {
-        const found = await getUserById(storedUserId);
-        if (mounted && found) {
-          setCurrentUser(found);
-          setLoading(false);
-          return;
+        // Check if there is an existing session
+        const storedUserId = localStorage.getItem('dpmis_session_user_id');
+        if (storedUserId) {
+          const found = await getUserById(storedUserId);
+          if (mounted && found) {
+            setCurrentUser(found);
+          }
         }
-      }
-
-      // Default demo initial user: Researcher Dr. Maria Corazon De Castro
-      const defaultUser = INITIAL_USERS.find(u => u.role === 'researcher') || INITIAL_USERS[0];
-      if (mounted) {
-        setCurrentUser(defaultUser);
-        localStorage.setItem('dpmis_session_user_id', defaultUser.id);
-        setLoading(false);
+      } catch (err) {
+        console.warn('AuthContext background init note: ', err);
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
 
@@ -163,7 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reseed,
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

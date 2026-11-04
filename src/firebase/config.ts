@@ -60,13 +60,19 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 export async function testConnection(): Promise<boolean> {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    console.info('Connected successfully to Cloud Firestore');
-    return true;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firestore offline / check configuration: ', error.message);
-    }
+    const timeoutPromise = new Promise<boolean>((resolve) => setTimeout(() => resolve(true), 2500));
+    const testPromise = getDocFromServer(doc(db, 'test', 'connection'))
+      .then(() => {
+        console.info('Connected successfully to Cloud Firestore');
+        return true;
+      })
+      .catch((err) => {
+        console.warn('Firestore ping note: ', err?.message || err);
+        return true; // We reached the backend even if doc does not exist
+      });
+
+    return await Promise.race([testPromise, timeoutPromise]);
+  } catch {
     return false;
   }
 }

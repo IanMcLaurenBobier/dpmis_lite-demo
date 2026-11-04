@@ -44,6 +44,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Health check / connection test
+    match /test/{docId} {
+      allow read: if true;
+    }
+
     // Users collection
     match /users/{userId} {
       allow read: if isSignedIn();
